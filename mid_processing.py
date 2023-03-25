@@ -24,3 +24,7 @@ for i, track in enumerate(mid.tracks):
 # note_on channel=1 note=59 velocity=64 time=0
 # note_off channel=1 note=59 velocity=59 time=60
 # note_on channel=1 note=57 velocity=64 time=0
+# note_on / off: as the name suggest
+# note: pitch
+# velocity: strength, doesn't matter
+# time: past time since the last msg
