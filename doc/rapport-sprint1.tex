@@ -1,0 +1,91 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{}
+\usepackage{parskip}
+\usepackage{url}
+\usepackage{listings}
+
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\title{Rapport (sprint 1) du projet de 8INF892}
+\author{Wenhao LUO\\LUOW09129805}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\newpage
+\section{Introduction}
+
+\par Dans le cadre du cours 8INF892, j'ai besoin de réaliser un projet en utilisant les outils de l'apprentissage profond. Je choisis de créer un réseau neurone qui permet de produire de la musique en imitant le style de Bach. Le projet sera réaliser en utiliisant \texttt{Python}, avec l'aide de la bibliothèque \texttt{TensorFlow}.
+
+\par Dans le premier sprint, je commence par chercher l'algorithme que j'ai besoin d'utiliser ainsi que les outils dont j'ai besoin. Dans les deux sections suivantes, je vais présenter les recherches que j'ai réalisées.
+
+\par Le dépôt du projet est disponible sur Github : \url{https://github.com/LuoQuestionmark/projet-appentissage-profond}.
+
+\section{Algorithme recherché}
+
+\par L'inspiration de ce projet est un "Google Doodle" il y a quelques années\footnote{\url{https://www.google.com/doodles/celebrating-johann-sebastian-bach}}. Il y a un article qui explique en détails de ce projet\cite{huang2017counterpoint}. Le réseau neurone est entraîné pour "compléter" la partition musicale : on cache certaines informations de la partition, et le réseau doit retrouver ces informations ; c'est donc un apprentissage supervisé.
+
+\par Une fois ce réseau est réalisé, un morceau de la musique peut être créé en utilisant le réseau plusieurs fois. Chaque fois des nouvelles notes seront ajoutées.
+
+\section{Dataset}
+
+\par On peut trouver un dataset sur l'internet\cite{bachmid}. Le format \texttt{midi} est un format connu. Il y a donc une bibliothèque disponible avec le langage \texttt{Python}\cite{python-mid}. Un exemple de la lecture d'un fichier \texttt{midi} avec ce module est montré dans le listing \ref{prog}.
+
+\par Le plan du sprint 2 est analyser la sortie de ce module et encoder cette sortie sous le format compréhensible par le réseau neurone.
+
+\section{Conclusion}
+
+\par Dans le premier sprint, j'ai exploré l'algorithme à utiliser et les bibliothèques utiles. J'ai fini donc la préparation pour la création du réseau neurone de ce projet. 
+
+\begin{minipage}[t]{\textwidth}
+\begin{lstlisting}[language=Python, caption={Un exemple du programme qui permet de lire le fichier \texttt{midi}.}, label={prog}]
+for i, track in enumerate(mid.tracks):
+print('Track {}: {}'.format(i, track.name))
+for msg in track:
+    print(msg)
+
+# output:
+# note_on channel=1 note=60 velocity=64 time=0
+# note_off channel=1 note=60 velocity=51 time=60
+# note_on channel=1 note=62 velocity=64 time=0
+# note_off channel=1 note=62 velocity=49 time=60
+# note_on channel=1 note=60 velocity=64 time=0
+# note_off channel=1 note=60 velocity=55 time=60
+# note_on channel=1 note=59 velocity=64 time=0
+# note_off channel=1 note=59 velocity=59 time=60
+# note_on channel=1 note=57 velocity=64 time=0
+\end{lstlisting}
+\end{minipage}
+
+\bibliographystyle{plain}
+\bibliography{ref}
+
+\end{document}
