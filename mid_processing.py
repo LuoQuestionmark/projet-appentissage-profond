@@ -160,14 +160,4 @@ class DataGenerator1:
 
 
 if __name__ == "__main__":
-    mp = MidProcess('Fugue1.mid')
-    out = mp.parse()
-    # print(out)
-
-    # average_len = np.mean([len(n) for n in out])
-    # print(f"average length: {average_len}")
-    
-    dg = DataGenerator1()
-    train, label = dg.generate(out)
-
-    print(np.sum(train, axis=1))
+    pass
