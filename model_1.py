@@ -1,3 +1,8 @@
+"""
+This program can create a model, train it will the data,
+then save it as a checkpoint, c.f. last line of file.
+"""
+
 import numpy as np
 import tensorflow as tf
 

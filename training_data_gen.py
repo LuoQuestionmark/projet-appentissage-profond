@@ -1,3 +1,8 @@
+"""
+This program generate the array data for further training using
+the midi files in the './data' dir.
+"""
+
 from mid_processing import DataGenerator1, MidProcess
 
 import os
