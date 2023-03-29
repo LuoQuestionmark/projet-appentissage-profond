@@ -6,6 +6,7 @@ later I will create a class to handle it in a more standard way.
 from mido import MidiFile
 
 import numpy as np
+import random
 
 # mid = MidiFile('Fugue1.mid')
 
@@ -48,6 +49,12 @@ class Note:
 
     def __len__(self) -> int:
         return self.end_t - self.start_t
+
+    def get_group(self) -> set:
+        out = set([i.pitch for i in self.neighbors])
+        out.add(self.pitch)
+
+        return out 
         
 
 class MidProcess:
@@ -105,12 +112,54 @@ class MidProcess:
 
         return out
 
+class DataGenerator1:
+    def __init__(self, hide_num=1, input_size=128, output_size=128) -> None:
+        self.hide_num = hide_num
+        self.input_size = input_size
+        self.output_size = output_size
+
+
+    def generate(self, data) -> tuple[np.array, np.array]:
+        """
+        First attempt of data generation based on the data parsed by MidProcess class
+
+        output: (data, label)
+        """
+        out_train = np.empty((len(data), self.input_size))
+
+        out_label = np.empty((len(data), self.output_size))
+
+        for i, note in enumerate(data):
+            notes = note.get_group()
+            label = set(random.choices(list(notes), k=self.hide_num))
+            train = notes - label
+
+            train_array = np.zeros(self.input_size, dtype=np.int0)
+            for j in train:
+                train_array[j] = 1
+
+            label_array = np.zeros(self.output_size, dtype=np.int0)
+            for j in label:
+                label_array[j] = 1
+
+            # TODO: add random noise if needed
+
+            out_train[i] = train_array
+            out_label[i] = label_array
+
+        return out_train, out_label
+
+
+
 if __name__ == "__main__":
     mp = MidProcess('Fugue1.mid')
     out = mp.parse()
+    # print(out)
 
     # average_len = np.mean([len(n) for n in out])
     # print(f"average length: {average_len}")
     
+    dg = DataGenerator1()
+    train, label = dg.generate(out)
 
-    print(out)
+    print(np.sum(train, axis=1))
