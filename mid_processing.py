@@ -59,13 +59,21 @@ class Note:
 
 class MidProcess:
     def __init__(self, file) -> None:
-        self.mid_file = MidiFile(file)
+        try:
+            self.mid_file = MidiFile(file)
+        except OSError:
+            self.mid_file = None
+            print(f"error in file {file}")
 
     def parse(self) -> list[Note]:
         """
         The output will be presented as a list of Note
         """
         out = list()
+
+        if self.mid_file is None:
+            return out
+
         tmp_dict = dict()
         # firstly, create a temperal list that save the information of uncompleted note,
         # i.e. a "note_on" on a certain pitch p
