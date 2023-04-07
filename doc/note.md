@@ -48,3 +48,15 @@ At this moment, the first network will be defined in the following way:
 - output: about 128 nodes, with each one represent the likelihood of existing of another note at a certain pitch (from 0 to 1);
 
 - a random noise should be put as input as well, for a better generation of new music.
+
+## first model: the note auto-completion
+
+The first model I created is to auto-complete the missing note(s) basing on the known notes. The network works as a bayers model: by giving the existing notes  $n_1, n_2, \cdots$ as input, the model is capable of finding the most possible note in such situation, i.e. the note $n_p$ where:
+
+$$
+\forall i \in [1, n], P(n_p|n_1, n_2, \cdots) \geq P(n_p|n_1, n_2, \cdots)
+$$.
+
+## second model: the rythme auto-completion
+
+The second model is to predict the length of a note basing on existing notes. We can encode the length of a music note $n$ as a number $d(n)$. Knowing a suite of notes with their length $d(n_1), d(n_2), \cdots, d(n_i)$, the model should be able to predict the length of the next note $d(n_{i+1})$.
