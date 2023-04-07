@@ -34,10 +34,11 @@ class Note:
     """
     The class for each and every sing note
     """
-    def __init__(self, start_t, end_t, pitch) -> None:
+    def __init__(self, start_t, end_t, pitch, channel=0) -> None:
         self.start_t = start_t
         self.end_t = end_t
         self.pitch = pitch
+        self.channel = channel
 
         self.neighbors = set()
 
@@ -47,7 +48,8 @@ class Note:
     def __repr__(self) -> str:
         return self.__str__()
 
-    def __len__(self) -> int:
+    @property
+    def length(self) -> float:
         return self.end_t - self.start_t
 
     def get_group(self) -> set:
@@ -75,6 +77,9 @@ class MidProcess:
             return out
 
         tmp_dict = dict()
+
+        tempo_unit = 0
+
         # firstly, create a temperal list that save the information of uncompleted note,
         # i.e. a "note_on" on a certain pitch p
         # the key will be the pitch p and the value will be the start time t
@@ -87,6 +92,9 @@ class MidProcess:
             for msg in track:
                 # ignore the meta-info
                 if msg.is_meta:
+                    if msg.type == 'time_signature':
+                        # print(msg)
+                        tempo_unit = msg.clocks_per_click / msg.notated_32nd_notes_per_beat
                     continue
                 
                 timestamp += msg.time
@@ -99,7 +107,7 @@ class MidProcess:
                     t_e = timestamp
                     pitch = msg.note
 
-                    out.append(Note(t_s, t_e, pitch))
+                    out.append(Note(t_s / tempo_unit, t_e/tempo_unit, pitch, channel=msg.channel))
                 else:
                     print(msg.type)
                     exit(0)
@@ -109,7 +117,7 @@ class MidProcess:
         # it should be done with a O(log(n)) algo,
         # but I will just do it with O(n^2), knowing that the
         # input size should not matter too much in our case
-        average_len = np.mean([len(n) for n in out])
+        average_len = np.mean([n.length for n in out])
         dist_max = 2.5 * average_len
         out = sorted(out, key=lambda i: i.start_t)
         for index, note in enumerate(out):
@@ -160,4 +168,6 @@ class DataGenerator1:
 
 
 if __name__ == "__main__":
-    pass
+    mp = MidProcess('./data/Fugue7.mid')
+    data = mp.parse()
+    print([i.length for i in data])
