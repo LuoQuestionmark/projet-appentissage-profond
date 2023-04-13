@@ -51,7 +51,7 @@ for iteration in range(10):
         input_array[0][i] = 1
 
     # each time the drop note is the output
-    #print(f"drop: {drop_index}")
+    print(f"drop: {drop_index}")
     out.append(MidTranslator.translate(drop_index))
 
     # loop, feed the new result into the model

@@ -21,7 +21,7 @@ mp = MidProcess('./data/Fugue1.mid')
 test_data = mp.parse()
 
 dg = DataGenerator1()
-train, label = dg.generate(data)
+train, label = dg.generate(data, duplicate=8)
 test, t_label = dg.generate(test_data)
 
 

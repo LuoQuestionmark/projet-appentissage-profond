@@ -135,33 +135,35 @@ class DataGenerator1:
         self.output_size = output_size
 
 
-    def generate(self, data) -> tuple[np.array, np.array]:
+    def generate(self, data, duplicate=1) -> tuple[np.array, np.array]:
         """
         First attempt of data generation based on the data parsed by MidProcess class
 
         output: (data, label)
         """
-        out_train = np.empty((len(data), self.input_size))
 
-        out_label = np.empty((len(data), self.output_size))
+        out_train = np.empty((len(data) * duplicate, self.input_size))
+        out_label = np.empty((len(data) * duplicate, self.output_size))
 
         for i, note in enumerate(data):
             notes = note.get_group()
-            label = set(random.choices(list(notes), k=self.hide_num))
-            train = notes - label
 
-            train_array = np.zeros(self.input_size, dtype=np.int0)
-            for j in train:
-                train_array[j] = 1
+            for d_times in range(duplicate):
+                rand_dp = max(min(random.randint(-10, 10), 127), 0)
+                label = set(random.choices(list(notes), k=self.hide_num))
+                train = notes - label
 
-            label_array = np.zeros(self.output_size, dtype=np.int0)
-            for j in label:
-                label_array[j] = 1
+                train_array = np.zeros(self.input_size, dtype=np.int0)
+                for j in train:
+                    train_array[j + rand_dp] = 1
 
-            # TODO: add random noise if needed
+                label_array = np.zeros(self.output_size, dtype=np.int0)
+                for j in label:
+                    label_array[j + rand_dp] = 1
 
-            out_train[i] = train_array
-            out_label[i] = label_array
+                # TODO: add random noise if needed
+                out_train[len(data) * d_times + i] = train_array
+                out_label[len(data) * d_times + i] = label_array
 
         return out_train, out_label
 
