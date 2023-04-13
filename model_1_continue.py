@@ -7,6 +7,8 @@ from model_1 import create_model
 from itertools import count, compress
 from collections import deque
 
+from mid_translator import MidTranslator
+
 import numpy as np
 import tensorflow as tf
 
@@ -29,6 +31,8 @@ for i in notes:
 # make the system predict what are the most possible notes
 prediction = model.predict(input_array)[0]
 
+out = []
+
 for iteration in range(10):
     # select the most possible new note
     prediction = prediction ** 2
@@ -47,7 +51,10 @@ for iteration in range(10):
         input_array[0][i] = 1
 
     # each time the drop note is the output
-    print(f"drop: {drop_index}")
+    #print(f"drop: {drop_index}")
+    out.append(MidTranslator.translate(drop_index))
 
     # loop, feed the new result into the model
     prediction = model.predict(input_array)[0]
+
+print(out)
