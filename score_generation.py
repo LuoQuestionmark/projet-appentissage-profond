@@ -1,3 +1,4 @@
+from itertools import count
 from model_combined import CombinedModel
 
 class ScoreGeneration:
@@ -69,16 +70,20 @@ class ScoreGeneration:
 
     def __str__(self) -> str:
         out = "\\version \"2.20.0\"\n"
-        out += "{\n"
+        out += "\score {\n"
+        out += "\t<<\n"
+        out += "\t\\new PianoStaff = \"piano\" <<\n"
 
         for pitches, durations in zip(self.results_pitch, self.results_duration):
+            out += "\\new Staff {"
             for p, d in zip(pitches, durations):
                 out += self.note_to_lilypond(p, d)
                 out += " "
-        out += "}"
+            out += "}\n"
+        out += "\t>>\n\t>>\n\t\\layout{}\n}\n"
 
         return out
     
 if __name__ == '__main__':
-    sg = ScoreGeneration(1)
+    sg = ScoreGeneration(2)
     print(sg)

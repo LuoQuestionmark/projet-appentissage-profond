@@ -136,14 +136,45 @@ class CombinedModel:
                 out[0,index] = np.random.normal(64, 8)
             else:
                 raise RuntimeError("unexpected case")
+            
+            self.develop_voice_subject_pitch_additional(subject, out)
+
         return out
+
+    def develop_voice_subject_pitch_additional(self, subject, develop):
+        """
+        Additional treatment to make the pitch better
+        """
+        center = subject[0,0]
+
+        distance_list = [0, 7, 4, 5, 9, 2, 11, 6, 1, 8, 3, 10]
+        modify_list = list()
+        for index, note in enumerate(develop.flatten()):
+            if distance_list.index((note - center) % 12) > 5:
+                modify_list.append(index)
+
+        for index in modify_list:
+            develop[0, index] = center
+        for index in modify_list:
+            input_val = np.zeros((1, 128))
+            # fill all the neighborhood values
+            for j in range(max(0, index - 5), min(len(develop.flatten()), index + 5)):
+                input_val[0, develop[0,j]] = 1
+            # but not the index one
+            input_val[0, index] = 0
+            model_output = CombinedModel.model_1.predict(input_val)
+            prob = model_output[0] / np.sum(model_output, axis=None)
+            develop[:,index] = np.random.choice(128, p=prob)
+        
+        return develop
+
     
     def postprocess_voice_subject_pitch(self, develop):
         develop = develop.flatten()
         out = np.zeros_like(develop)
         mean = np.mean(develop)
         for i, e in enumerate(develop):
-            while abs(e - mean) > 12:
+            while abs(e - mean) > 8:
                 if e > mean:
                     e -= 12
                 else:
