@@ -21,7 +21,7 @@ class CombinedModel:
 
     def generate_voice_subject_duration(self, length=10, iter_num=10):
         """
-        This function generate a voice subject from random noise,
+        This function generate a voice subject (duration) from random noise,
         after multiple iterations it should generate something in the right style
         """
         out = np.zeros((1, 20 + 5 * iter_num, 1))
@@ -42,24 +42,94 @@ class CombinedModel:
         """
         out = np.zeros((1, dev_length, 1))
 
-        actions = random.choices(population=["copy", "fill"], weights=[0.3, 0.7], k=iter_num)
+        actions = random.choices(population=["copy", "fill", "noise"], weights=[0.3, 0.65, 0.05], k=iter_num)
         for action in actions:
             if action == "copy":
-                index = random.randint(0, dev_length - sub_length)
+                index = random.randint(0, dev_length - sub_length - 1)
                 out[:,index:index+sub_length,:] = subject
             elif action == "fill":
-                index = random.randint(0, dev_length - 20 - 5)
+                index = random.randint(0, dev_length - 20 - 5 - 1)
                 model_input = out[:,index:index+20,:]
                 model_output = CombinedModel.model_2.predict(model_input)
                 out[:,index+20:index+25,:] = np.clip(model_output.reshape(1, 5, 1), a_min=0, a_max=None)
+            elif action == "noise":
+                index = random.randint(0, dev_length - 1)
+                out[0,index,0] = random.random()
             else:
-                pass
+                raise RuntimeError("unexpected case")
 
         return out
+    
+    def generate_voice_subject_pitch(self, length=10, iter_num=10):
+        """
+        This function generate a voice subject (pitch) from random noise,
+        after multiple iterations it should generate something in the right style
+        """
+        input_val = np.random.rand(1, 128)
+        for _ in range(iter_num):
+            output_val = CombinedModel.model_1.predict(input_val).reshape(1, 128)
+            input_val = output_val
+        # output_val is now the probability of Bach's style
+        output_val = output_val / np.sum(output_val, axis=None)
+        
+        # now try to generate the subject
+        # start by a mostly random one
+        out = random.choices(range(128), weights=output_val[0], k=length)
+
+        # replace the notes with the model prediction
+        for index in random.choices(range(length), k=iter_num):
+            input_val = np.zeros((1, 128))
+            # fill all the neighborhood values
+            for j in range(max(0, index - 5), min(length, index + 5)):
+                input_val[0, out[j]] = 1
+            # but not the index one
+            input_val[0, index] = 0
+
+            output_val = CombinedModel.model_1.predict(input_val).reshape(1, 128)
+            output_val = output_val / np.sum(output_val, axis=None)
+            out[index] = np.random.choice(128, p=output_val[0])
+
+        return out
+    
+    def develop_voice_subject_pitch(self, subject, sub_length=10, dev_length=100, iter_num=100, decl=0):
+        out = np.zeros((1, dev_length), dtype=int)
+
+        # prepare the subject
+        subject = np.array(subject)
+        subject = subject.reshape(1, sub_length) + decl
+        np.clip(subject, a_min=0, a_max=127, out=subject)
+        out[:, 0:sub_length] = subject
+
+        actions = random.choices(population=["copy", "fill", "noise"], weights=[0.3, 0.65, 0.05], k=iter_num)
+        for action in actions:
+            if action == "copy":
+                index = random.randint(0, dev_length - sub_length - 1)
+                out[:,index:index+sub_length] = subject
+            elif action == "fill":
+                index = random.randint(0, dev_length - 1)
+                input_val = np.zeros((1, 128))
+                # fill all the neighborhood values
+                for j in range(max(0, index - 5), min(dev_length, index + 5)):
+                    input_val[0, out[0,j]] = 1
+                # but not the index one
+                input_val[0, index] = 0
+                model_output = CombinedModel.model_1.predict(input_val)
+                prob = model_output[0] / np.sum(model_output, axis=None)
+                out[:,index] = np.random.choice(128, p=prob)
+            elif action == "noise":
+                index = random.randint(0, dev_length - 1)
+                out[0,index] = np.random.normal(64, 8)
+            else:
+                raise RuntimeError("unexpected case")
+        return out
+
 
 if __name__ == '__main__':
     cm = CombinedModel()
-    subject = cm.generate_voice_subject_duration()
-    develop = cm.develop_voice_subject_duration(subject)
+    # subject_duration = cm.generate_voice_subject_duration()
+    # develop_duration = cm.develop_voice_subject_duration(subject_duration)
+    # print(develop_duration)
 
+    subject = cm.generate_voice_subject_pitch()
+    develop = cm.develop_voice_subject_pitch(subject)
     print(develop)
