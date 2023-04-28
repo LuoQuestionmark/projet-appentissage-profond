@@ -40,16 +40,18 @@ model = create_model()
 
 model.fit(train_data, train_label, validation_data=(test_data, test_label))
 
-noise = np.random.rand(1, 20, 1)
-prediction = model.predict(noise)
+model.save_weights('./checkpoints/model_2')
 
-print(noise)
-print([round(i * 128) for i in prediction[0]])
+# noise = np.random.rand(1, 20, 1)
+# prediction = model.predict(noise)
 
-motive = [[2,2,1,1,2,2,1,1,1,3,2,1,4,8,4]]
-prediction = model.predict(motive)
-print(prediction)
-print([round(i * 128) for i in prediction[0]])
+# print(noise)
+# print([round(i * 128) for i in prediction[0]])
+
+# motive = [[4,4,2,2,2,2,1,1,1,1,1,1,4,4,4]]
+# prediction = model.predict(motive)
+# print(prediction)
+# print([round(i * 128) for i in prediction[0]])
 
 # outputs = model (data)
 # outputs = [round(i) for i in outputs]

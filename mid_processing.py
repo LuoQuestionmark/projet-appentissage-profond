@@ -63,7 +63,7 @@ class MidProcess:
     def __init__(self, file) -> None:
         try:
             self.mid_file = MidiFile(file)
-        except OSError:
+        except (OSError, EOFError):
             self.mid_file = None
             print(f"error in file {file}")
 
