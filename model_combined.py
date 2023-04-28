@@ -24,29 +24,35 @@ class CombinedModel:
         This function generate a voice subject (duration) from random noise,
         after multiple iterations it should generate something in the right style
         """
-        out = np.zeros((1, 20 + 5 * iter_num, 1))
+        out = np.random.rand(1, 20 + 5 * iter_num, 1)
         input_val = np.random.rand(1, 20, 1)
         out[:, 0:20, :] = input_val
         for i in range(iter_num):
             prediction = CombinedModel.model_2.predict(input_val).reshape(1,5,1)
-            out[:, 20 + 5 * i:25 + 5 * i, :] = prediction
+            out[:, 20 + 5 * i:25 + 5 * i, :] = np.abs(prediction)
             input_val = out[:, 5 + 5 * i:25 + 5 * i, :]
 
         out = out[:, 20+5*iter_num-length:,:]
         out = np.clip(out, a_min=0, a_max=None)
         return out
     
-    def develop_voice_subject_duration(self, subject, sub_length=10, dev_length=100, iter_num=100):
+    def develop_voice_subject_duration(self, subject, sub_length=10, dev_length=100, iter_num=300):
         """
         This function develop the subject input by copying the subject and fill the gap with the trained model
         """
         out = np.zeros((1, dev_length, 1))
 
-        actions = random.choices(population=["copy", "fill", "noise"], weights=[0.3, 0.65, 0.05], k=iter_num)
+        actions = random.choices(population=["copy", "fill", "noise"], weights=[0.3, 0.69, 0.01], k=iter_num)
         for action in actions:
             if action == "copy":
                 index = random.randint(0, dev_length - sub_length - 1)
-                out[:,index:index+sub_length,:] = subject
+                copy_times = 1
+                """
+                add variantion: augmentation of subject
+                """
+                while random.random() < 0.3:
+                    copy_times *= 2
+                out[:,index:index+sub_length,:] = subject * copy_times
             elif action == "fill":
                 index = random.randint(0, dev_length - 20 - 5 - 1)
                 model_input = out[:,index:index+20,:]
@@ -59,6 +65,15 @@ class CombinedModel:
                 raise RuntimeError("unexpected case")
 
         return out
+    
+    def postprocess_voice_subject_duration(self, develop):
+        develop = develop.flatten()
+        develop *= 256
+        develop = np.log2(develop).astype(int)
+        develop = np.clip(develop, a_min=0, a_max=4)
+        develop = np.power(2, develop)
+        return np.clip(develop.astype(int), a_min=0, a_max=16)
+
     
     def generate_voice_subject_pitch(self, length=10, iter_num=10):
         """
@@ -122,14 +137,34 @@ class CombinedModel:
             else:
                 raise RuntimeError("unexpected case")
         return out
+    
+    def postprocess_voice_subject_pitch(self, develop):
+        develop = develop.flatten()
+        out = np.zeros_like(develop)
+        mean = np.mean(develop)
+        for i, e in enumerate(develop):
+            while abs(e - mean) > 12:
+                if e > mean:
+                    e -= 12
+                else:
+                    e += 12
+            out[i] = e
+
+        return out
 
 
 if __name__ == '__main__':
     cm = CombinedModel()
     # subject_duration = cm.generate_voice_subject_duration()
     # develop_duration = cm.develop_voice_subject_duration(subject_duration)
+    # result_duration = cm.postprocess_voice_subject_duration(develop_duration)
+
+    # print(subject_duration)
     # print(develop_duration)
+    # print(result_duration)
 
     subject = cm.generate_voice_subject_pitch()
     develop = cm.develop_voice_subject_pitch(subject)
+    post = cm.postprocess_voice_subject_pitch(develop)
     print(develop)
+    print(post)
